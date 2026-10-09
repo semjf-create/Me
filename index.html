@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Voxface</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Voxface">
+<meta name="theme-color" content="#2F4BFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EAF2F0;--surface:#fff;--ink:#14252B;--muted:#5B6E73;--line:#CFDDDA;--accent:#2F4BFF;--accent-ink:#fff;--warm:#FFB59A;--err:#B3261E;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1A1E;--surface:#16262B;--ink:#E8F1EF;--muted:#8FA6AB;--line:#26393F;--accent:#7C8CFF;--accent-ink:#0F1A1E;--warm:#FF9C7A;--err:#FF8A80}}
+:root[data-theme="dark"]{--bg:#0F1A1E;--surface:#16262B;--ink:#E8F1EF;--muted:#8FA6AB;--line:#26393F;--accent:#7C8CFF;--accent-ink:#0F1A1E;--warm:#FF9C7A;--err:#FF8A80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 Figtree,system-ui,sans-serif}
+main{max-width:480px;margin:0 auto;padding:20px 18px 40px}
+h1{font:800 34px/1 'Bricolage Grotesque',Figtree,sans-serif;margin:8px 0 6px;letter-spacing:-.02em}
+.sub{margin:0 0 22px;color:var(--muted)}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:28px;padding:22px 18px 16px;text-align:center}
+.frame{width:210px;height:210px;margin:0 auto;border-radius:50%;position:relative;border:4px solid var(--line);background:var(--bg);overflow:hidden;transition:border-color .2s,border-radius .3s}
+.frame.speaking{border-color:var(--accent)}
+.frame[data-style="cartoon"] img{filter:saturate(1.7) contrast(1.25)}
+.frame[data-style="3d"]{border-radius:38%}
+.frame[data-style="3d"] img{filter:contrast(1.1) brightness(1.05) drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.frame img,.frame svg{width:100%;height:100%;object-fit:cover;display:block}
+#img{display:none}
+#mouth{transform-box:fill-box;transform-origin:center;transform:scaleY(.3)}
+.speaking #mouth{animation:talk .26s ease-in-out infinite alternate}
+@keyframes talk{to{transform:scaleY(1.1)}}
+.wave{display:flex;gap:3px;align-items:center;justify-content:center;height:34px;margin:16px 0 4px}
+.wave i{width:4px;height:6px;border-radius:2px;background:var(--line);transition:background .2s}
+.speaking~.wave i,.wave.on i{background:var(--accent);animation:bar .5s ease-in-out infinite alternate}
+@keyframes bar{to{height:30px}}
+.status{margin:0;font-size:14px;color:var(--muted);min-height:21px}
+section{margin-top:22px}
+label.t,.t{display:block;font-weight:600;margin-bottom:8px}
+.pick{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;background:var(--surface);border:1.5px dashed var(--muted);border-radius:16px;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.pick:hover{border-color:var(--accent)}
+.pick small{display:block;color:var(--muted)}
+textarea{width:100%;min-height:110px;resize:vertical;padding:14px 16px;border:1.5px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);font:inherit}
+textarea:focus-visible,.pick:focus-visible,.chip:focus-visible,.cta:focus-visible,.ghost:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.count{text-align:right;font-size:13px;color:var(--muted);margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 16px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.chip[aria-checked="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cta{width:100%;margin-top:26px;padding:16px;border:0;border-radius:16px;background:var(--accent);color:var(--accent-ink);font:600 17px Figtree,sans-serif;cursor:pointer}
+.cta:disabled{opacity:.55;cursor:wait}
+.ghost{padding:12px 18px;border:1.5px solid var(--ink);border-radius:14px;background:transparent;color:var(--ink);font:600 15px Figtree,sans-serif;cursor:pointer}
+.consent{display:flex;gap:10px;align-items:center;margin-top:18px}.consent input{width:22px;height:22px;accent-color:var(--accent)}
+.err{color:var(--err);font-size:14px;margin:8px 0 0;min-height:21px}
+#prog,#done{display:none;margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+#prog ul{list-style:none;margin:0;padding:0}
+#prog li{padding:6px 0 6px 28px;position:relative;color:var(--muted)}
+#prog li::before{content:"";position:absolute;left:4px;top:13px;width:12px;height:12px;border-radius:50%;border:2px solid var(--line)}
+#prog li.active{color:var(--ink);font-weight:600}
+#prog li.active::before{border-color:var(--accent);border-top-color:transparent;animation:spin .8s linear infinite}
+#prog li.ok{color:var(--ink)}
+#prog li.ok::before{background:var(--accent);border-color:var(--accent)}
+@keyframes spin{to{transform:rotate(360deg)}}
+#done h2{font:800 20px 'Bricolage Grotesque',sans-serif;margin:0 0 4px}
+#done p{margin:0 0 14px;color:var(--muted)}
+#done .row{display:flex;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Voxface</h1>
+  <p class="sub">Une photo, un texte : ton avatar parle.</p>
+
+  <div class="stage">
+    <div class="frame" id="frame" data-style="realiste">
+      <img id="img" alt="Ta photo">
+      <svg id="face" viewBox="0 0 200 200" role="img" aria-label="Avatar par défaut">
+        <rect width="200" height="200" fill="#FFB59A"/>
+        <circle cx="100" cy="92" r="58" fill="#FFE3D3"/>
+        <path d="M42 86c0-40 30-58 58-58s58 18 58 58c-14-22-34-30-58-30s-44 8-58 30z" fill="#14252B"/>
+        <circle cx="78" cy="94" r="6" fill="#14252B"/><circle cx="122" cy="94" r="6" fill="#14252B"/>
+        <ellipse id="mouth" cx="100" cy="126" rx="16" ry="11" fill="#B3261E"/>
+        <path d="M30 200c6-34 36-44 70-44s64 10 70 44z" fill="#2F4BFF"/>
+      </svg>
+    </div>
+    <div class="wave" id="wave" aria-hidden="true"></div>
+    <p class="status" id="status" aria-live="polite">Ajoute une photo pour remplacer l'avatar par défaut.</p>
+  </div>
+
+  <section>
+    <span class="t">Photo</span>
+    <button class="pick" id="pick" type="button">
+      <span aria-hidden="true">📷</span>
+      <span>Choisir une photo<small id="fname">Portrait de face, bien éclairé</small></span>
+    </button>
+    <input id="file" type="file" accept="image/*" hidden>
+  </section>
+
+  <section>
+    <label class="t" for="txt">Ce que l'avatar doit dire</label>
+    <textarea id="txt" maxlength="300" placeholder="Bonjour, je m'appelle Léa et je vous présente notre nouvelle application."></textarea>
+    <div class="count"><span id="n">0</span>/300</div>
+  </section>
+
+  <section>
+    <span class="t" id="lv">Voix</span>
+    <div class="chips" role="radiogroup" aria-labelledby="lv" data-group="voice">
+      <button class="chip" role="radio" aria-checked="true" data-v="claire" type="button">Claire</button>
+      <button class="chip" role="radio" aria-checked="false" data-v="malik" type="button">Malik</button>
+      <button class="chip" role="radio" aria-checked="false" data-v="ines" type="button">Inès</button>
+    </div>
+  </section>
+
+  <section>
+    <span class="t" id="ls">Style</span>
+    <div class="chips" role="radiogroup" aria-labelledby="ls" data-group="style">
+      <button class="chip" role="radio" aria-checked="true" data-v="realiste" type="button">Réaliste</button>
+      <button class="chip" role="radio" aria-checked="false" data-v="cartoon" type="button">Cartoon</button>
+      <button class="chip" role="radio" aria-checked="false" data-v="3d" type="button">3D</button>
+    </div>
+  </section>
+
+  <label class="consent"><input type="checkbox" id="consent"> J'ai le droit d'utiliser cette photo.</label>
+  <p class="err" id="err" role="alert"></p>
+  <button class="cta" id="go" type="button">Générer la vidéo</button>
+
+  <div id="prog" aria-live="polite">
+    <ul><li>Création de la voix</li><li>Animation du visage</li><li>Rendu de la vidéo</li></ul>
+  </div>
+
+  <div id="done">
+    <h2>Ta vidéo est prête</h2>
+    <p>Écoute l'aperçu ci-dessus, puis modifie le texte ou la voix si besoin.</p>
+    <div class="row">
+      <button class="ghost" id="play" type="button">Écouter l'aperçu</button>
+      <button class="ghost" id="again" type="button">Recommencer</button>
+    </div>
+  </div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const frame=$('#frame'),wave=$('#wave'),status=$('#status');
+const state={voice:'claire',style:'realiste'};
+const VOICES={claire:{pitch:1.15,rate:1},malik:{pitch:.7,rate:.95},ines:{pitch:1.35,rate:1.05}};
+let timer=null;
+
+for(let i=0;i<26;i++){const b=document.createElement('i');b.style.animationDelay=(Math.random()*.5)+'s';b.style.animationDuration=(.3+Math.random()*.4)+'s';wave.appendChild(b)}
+
+$('#pick').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{$('#img').src=r.result;$('#img').style.display='block';$('#face').style.display='none';
+    $('#fname').textContent=f.name;status.textContent='Photo ajoutée.'};
+  r.readAsDataURL(f);
+};
+$('#txt').oninput=e=>{$('#n').textContent=e.target.value.length;$('#err').textContent=''};
+
+document.querySelectorAll('[data-group]').forEach(g=>{
+  g.addEventListener('click',e=>{
+    const c=e.target.closest('.chip'); if(!c) return;
+    g.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-checked',x===c));
+    state[g.dataset.group]=c.dataset.v;
+    if(g.dataset.group==='style') frame.dataset.style=c.dataset.v;
+  });
+});
+
+function setSpeaking(on){frame.classList.toggle('speaking',on);wave.classList.toggle('on',on)}
+
+function speak(){
+  const text=$('#txt').value.trim(); if(!text) return;
+  clearTimeout(timer);setSpeaking(true);status.textContent='Aperçu en cours…';
+  const stop=()=>{setSpeaking(false);status.textContent='Aperçu terminé.'};
+  try{
+    if(!('speechSynthesis' in window)) throw 0;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text),v=VOICES[state.voice];
+    u.lang='fr-FR';u.pitch=v.pitch;u.rate=v.rate;u.onend=stop;u.onerror=stop;
+    speechSynthesis.speak(u);
+  }catch(_){timer=setTimeout(stop,Math.max(1500,text.length*65))}
+}
+
+const uid=(()=>{try{let u=localStorage.getItem('vx');if(!u){u=crypto.randomUUID();localStorage.setItem('vx',u)}return u}catch(_){return 'demo'}})();
+const ORDER=['voix','animation','rendu'];
+const showErr=m=>{$('#err').textContent=m};
+async function poll(id,items){
+  for(;;){
+    const r=await fetch('/avatars/'+id,{headers:{'X-User-Id':uid}});
+    const j=await r.json();
+    const i=ORDER.indexOf(j.status);
+    items.forEach((li,k)=>li.className=j.status==='termine'||k<i?'ok':k===i?'active':'');
+    status.textContent='Génération en cours… '+j.progress+' %';
+    if(j.status==='echec') throw new Error(j.error);
+    if(j.status==='termine') return j;
+    await new Promise(res=>setTimeout(res,1200));
+  }
+}
+$('#go').onclick=async()=>{
+  const text=$('#txt').value.trim(),file=$('#file').files[0];
+  if(!file){showErr("Ajoute une photo de face pour lancer la génération.");return}
+  if(!text){showErr("Écris ce que l'avatar doit dire pour lancer la génération.");$('#txt').focus();return}
+  if(!$('#consent').checked){showErr("Coche la case pour confirmer que tu as le droit d'utiliser cette photo.");return}
+  showErr('');$('#done').style.display='none';
+  const prog=$('#prog'),items=[...prog.querySelectorAll('li')];
+  items.forEach(li=>li.className='');prog.style.display='block';
+  $('#go').disabled=true;status.textContent='Envoi en cours…';
+  const fd=new FormData();
+  fd.append('photo',file);fd.append('text',text);fd.append('voice',state.voice);fd.append('style',state.style);fd.append('consent','true');
+  try{
+    const r=await fetch('/avatars',{method:'POST',body:fd,headers:{'X-User-Id':uid}});
+    const j=await r.json();
+    if(!r.ok) throw new Error(typeof j.detail==='string'?j.detail:'Vérifie les champs et réessaie.');
+    await poll(j.job_id,items);
+    prog.style.display='none';$('#done').style.display='block';
+    $('#go').textContent='Générer une autre vidéo';status.textContent='Vidéo prête.';speak();
+    $('#done').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }catch(e){
+    prog.style.display='none';
+    showErr(e.message||"Impossible de joindre le serveur. Vérifie ta connexion et réessaie.");
+    status.textContent='';
+  }
+  $('#go').disabled=false;
+};
+$('#play').onclick=speak;
+$('#again').onclick=()=>{
+  try{speechSynthesis.cancel()}catch(_){}
+  setSpeaking(false);$('#done').style.display='none';$('#txt').value='';$('#n').textContent='0';
+  $('#go').textContent='Générer la vidéo';status.textContent='';$('#txt').focus();
+};
+</script>
+</body>
+</html>
